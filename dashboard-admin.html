@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Mishah Employment Agency</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="jobs.html">Jobs</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="dash-header">
+  <div class="wrap">
+    <div class="eyebrow on-dark">Agency Admin</div>
+    <h1>Overview</h1>
+    <p>A single view across every employer, domestic helper, listing and enquiry.</p>
+  </div>
+</div>
+
+<div class="dash-body">
+  <div class="wrap">
+    <div class="dash-stats" id="dash-stats"></div>
+
+    <div class="dash-section">
+      <div class="dash-section-head"><h2>Job listings</h2></div>
+      <div class="table-scroll">
+        <table class="data-table" id="jobs-table">
+          <thead><tr><th>Title</th><th>Employer</th><th>Location</th><th>Status</th><th>Applicants</th><th>Posted</th></tr></thead>
+          <tbody><tr><td colspan="6">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <div class="dash-section-head"><h2>Accounts</h2></div>
+      <div class="table-scroll">
+        <table class="data-table" id="users-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody><tr><td colspan="4">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="dash-section">
+      <div class="dash-section-head"><h2>Contact form enquiries</h2></div>
+      <div class="table-scroll">
+        <table class="data-table" id="leads-table">
+          <thead><tr><th>Name</th><th>Contact</th><th>Type</th><th>Message</th><th>Received</th></tr></thead>
+          <tbody><tr><td colspan="5">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+<script>
+const user = requireRole('admin');
+
+async function loadAll() {
+  if (!user) return;
+  try {
+    const overview = await apiFetch('/admin/overview');
+    const c = overview.counts;
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card"><div class="n">${c.users}</div><div class="l">Total accounts</div></div>
+      <div class="stat-card"><div class="n">${c.employers} / ${c.seekers}</div><div class="l">Employers / Seekers</div></div>
+      <div class="stat-card"><div class="n">${c.openJobs} / ${c.jobs}</div><div class="l">Open / Total listings</div></div>
+      <div class="stat-card"><div class="n">${c.applications}</div><div class="l">Total applications</div></div>
+    `;
+  } catch (err) {
+    document.getElementById('dash-stats').innerHTML = `<div class="auth-error show">${escapeHtml(err.message)}</div>`;
+  }
+
+  try {
+    const { jobs } = await apiFetch('/admin/jobs');
+    const users = (await apiFetch('/admin/users')).users;
+    document.querySelector('#jobs-table tbody').innerHTML = jobs.length ? jobs.map(j => {
+      const employer = users.find(u => u.id === j.employerId);
+      return `<tr>
+        <td>${escapeHtml(j.title)}</td>
+        <td>${employer ? escapeHtml(employer.name) : '—'}</td>
+        <td>${escapeHtml(j.location)}</td>
+        <td><span class="badge badge-${j.status}">${j.status}</span></td>
+        <td>${j.applicantCount}</td>
+        <td>${formatDate(j.createdAt)}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="6">No job listings yet.</td></tr>';
+
+    document.querySelector('#users-table tbody').innerHTML = users.length ? users.map(u => `
+      <tr>
+        <td>${escapeHtml(u.name)}</td>
+        <td>${escapeHtml(u.email)}</td>
+        <td>${escapeHtml(u.role)}</td>
+        <td>${formatDate(u.createdAt)}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="4">No accounts yet.</td></tr>';
+  } catch (err) {
+    document.querySelector('#jobs-table tbody').innerHTML = `<tr><td colspan="6">${escapeHtml(err.message)}</td></tr>`;
+  }
+
+  try {
+    const { leads } = await apiFetch('/contact');
+    document.querySelector('#leads-table tbody').innerHTML = leads.length ? leads.map(l => `
+      <tr>
+        <td>${escapeHtml(l.name)}</td>
+        <td>${escapeHtml(l.email)}<br>${escapeHtml(l.phone)}</td>
+        <td>${escapeHtml(l.role)}</td>
+        <td>${escapeHtml(l.message)}</td>
+        <td>${formatDate(l.createdAt)}</td>
+      </tr>
+    `).join('') : '<tr><td colspan="5">No enquiries yet.</td></tr>';
+  } catch (err) {
+    document.querySelector('#leads-table tbody').innerHTML = `<tr><td colspan="5">${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>

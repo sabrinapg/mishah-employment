@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact — Mishah Employment Agency</title>
+<meta name="description" content="Get in touch with Mishah Employment Agency, Brunei — for families looking to hire a domestic helper, or helpers looking for a placement.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="jobs.html">Jobs</a></li>
+      <li><a href="contact.html" class="active">Contact</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Contact</div>
+    <h1>Let's talk about what you need.</h1>
+    <p>Whether you're hiring or looking for work, tell us a little about it and we'll get back to you.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="contact-grid">
+      <div>
+        <div class="audience-switch reveal">
+          <button type="button" class="tab-btn switch-btn active" data-role="employer">I'm hiring a helper</button>
+          <button type="button" class="tab-btn switch-btn" data-role="seeker">I'm a domestic helper</button>
+        </div>
+
+        <div class="form-card reveal">
+          <form id="contact-form">
+            <input type="hidden" id="role-field" name="role" value="employer">
+            <div class="field-row">
+              <div class="field">
+                <label for="name">Full name</label>
+                <input type="text" id="name" name="name" required>
+              </div>
+              <div class="field">
+                <label for="phone">Phone number</label>
+                <input type="tel" id="phone" name="phone" required>
+              </div>
+            </div>
+            <div class="field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+            <div class="field">
+              <label for="position" id="position-label">Type of help you need</label>
+              <input type="text" id="position" name="position" placeholder="e.g. Live-in helper, Childcare, Elderly care">
+            </div>
+            <div class="field">
+              <label for="message">Message</label>
+              <textarea id="message" name="message" required placeholder="Tell us a bit more — for families, the type of help needed and expected start date; for domestic helpers, your experience and availability."></textarea>
+            </div>
+            <div class="auth-error" id="contact-error"></div>
+            <button type="submit" class="btn btn-navy" id="contact-submit">Send message</button>
+            <p class="form-note">Submissions are saved to the agency's enquiry list, viewable from the admin dashboard.</p>
+          </form>
+
+          <div class="form-success">
+            <h3>Message received</h3>
+            <p>Thank you for reaching out to Mishah Employment Agency. We'll be in touch shortly.</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="info-card reveal">
+          <h5>Office</h5>
+          <p>Bandar Seri Begawan</p>
+          <p class="muted">Brunei-Muara District, Brunei Darussalam</p>
+        </div>
+        <div class="info-card reveal">
+          <h5>Phone</h5>
+          <p><a href="tel:+6738860068">+673 886 0068</a></p>
+          <p class="muted">Sunday – Thursday, 8.00am – 5.00pm</p>
+        </div>
+        <div class="info-card reveal">
+          <h5>Email</h5>
+          <p>info@mishahemployment.bn</p>
+          <p class="muted">We typically reply within one business day.</p>
+        </div>
+        <div class="info-card reveal">
+          <h5>Licence</h5>
+          <p>PJB / LAP / 2011 / 006</p>
+          <p class="muted">Authorised Employment Agency, est. 2004</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+          <span class="footer-brand-text">Mishah Employment Agency</span>
+        </div>
+        <p class="desc">Authorised Employment Agency placing trusted, well-matched domestic helpers with families across Brunei Darussalam since 2004.</p>
+      </div>
+      <div class="footer-col">
+        <h5>Site</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="services.html">Services</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Services</h5>
+        <ul>
+          <li><a href="services.html#employers">For Families &amp; Employers</a></li>
+          <li><a href="services.html#seekers">For Domestic Helpers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h5>Contact</h5>
+        <ul>
+          <li>Bandar Seri Begawan, Brunei</li>
+          <li><a href="tel:+6738860068">+673 886 0068</a></li>
+          <li>info@mishahemployment.bn</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Mishah Employment Agency. All rights reserved.</span>
+      <a href="privacy.html" style="color:inherit; text-decoration:underline;">Privacy Policy</a>
+      <span class="license">Licence No. PJB/LAP/2011/006</span>
+    </div>
+  </div>
+</footer>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

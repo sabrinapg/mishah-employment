@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Open Roles — Mishah Employment Agency</title>
+<meta name="description" content="Browse current domestic helper openings from Mishah Employment Agency, Brunei.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="jobs.html" class="active">Jobs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Jobs</div>
+    <h1>Open placements right now.</h1>
+    <p>Every listing here comes from a family we've verified. Log in as a domestic helper to apply.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="job-board-filters reveal">
+      <input type="text" id="filter-q" placeholder="Search roles...">
+      <select id="filter-category">
+        <option value="">All categories</option>
+        <option>Live-in Domestic Helper</option>
+        <option>Childcare / Nanny</option>
+        <option>Elderly Care</option>
+        <option>Cooking & Household Management</option>
+      </select>
+      <input type="text" id="filter-location" placeholder="Location">
+      <button class="btn btn-outline" id="filter-apply">Filter</button>
+    </div>
+
+    <div id="jobs-error" class="auth-error"></div>
+    <div id="jobs-list" class="card-list"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© <span id="year"></span> Mishah Employment Agency. All rights reserved.</span>
+      <a href="privacy.html" style="color:inherit; text-decoration:underline;">Privacy Policy</a>
+      <span class="license">Licence No. PJB/LAP/2011/006</span>
+    </div>
+  </div>
+</footer>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+<script>
+async function loadJobs() {
+  const list = document.getElementById('jobs-list');
+  const errorBox = document.getElementById('jobs-error');
+  errorBox.classList.remove('show');
+  list.innerHTML = '<p style="color:var(--ink-soft)">Loading roles...</p>';
+
+  const params = new URLSearchParams();
+  const q = document.getElementById('filter-q').value.trim();
+  const category = document.getElementById('filter-category').value;
+  const location = document.getElementById('filter-location').value.trim();
+  if (q) params.set('q', q);
+  if (category) params.set('category', category);
+  if (location) params.set('location', location);
+
+  try {
+    const data = await apiFetch(`/jobs?${params.toString()}`);
+    renderJobs(data.jobs);
+  } catch (err) {
+    list.innerHTML = '';
+    errorBox.textContent = `Couldn't load jobs right now: ${err.message}`;
+    errorBox.classList.add('show');
+  }
+}
+
+function renderJobs(jobs) {
+  const list = document.getElementById('jobs-list');
+  if (!jobs.length) {
+    list.innerHTML = '<div class="empty-state">No open roles match your search right now — check back soon or <a href="contact.html">contact us</a> directly.</div>';
+    return;
+  }
+
+  const user = getUser();
+  list.innerHTML = jobs.map(job => `
+    <div class="list-card">
+      <div class="list-card-top">
+        <div>
+          <h4>${escapeHtml(job.title)}</h4>
+          <div class="meta">${escapeHtml(job.category)} · ${escapeHtml(job.location)} · ${escapeHtml(job.type)}${job.salaryRange ? ' · ' + escapeHtml(job.salaryRange) : ''}</div>
+        </div>
+        <span class="badge badge-open">Open</span>
+      </div>
+      <p class="desc">${escapeHtml(job.description)}</p>
+      <div class="list-card-actions">
+        ${applyButtonHtml(job, user)}
+      </div>
+      <div class="apply-panel" id="apply-panel-${job.id}" style="display:none; margin-top:16px;">
+        <div class="field">
+          <label for="note-${job.id}">A short note for the employer (optional)</label>
+          <textarea id="note-${job.id}" rows="3" placeholder="A sentence or two about your experience"></textarea>
+        </div>
+        <div class="auth-error" id="apply-error-${job.id}"></div>
+        <button class="btn btn-navy" onclick="submitApplication('${job.id}')">Submit application</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function applyButtonHtml(job, user) {
+  if (!user) {
+    return `<a href="login.html?next=jobs.html" class="btn btn-outline">Log in to apply</a>`;
+  }
+  if (user.role === 'employer' || user.role === 'admin') {
+    return `<span class="meta">Log in as a domestic helper to apply to placements.</span>`;
+  }
+  return `<button class="btn btn-outline" onclick="toggleApply('${job.id}')">Apply</button>`;
+}
+
+function toggleApply(jobId) {
+  const panel = document.getElementById(`apply-panel-${jobId}`);
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitApplication(jobId) {
+  const errorBox = document.getElementById(`apply-error-${jobId}`);
+  errorBox.classList.remove('show');
+  const coverNote = document.getElementById(`note-${jobId}`).value.trim();
+  try {
+    await apiFetch(`/jobs/${jobId}/apply`, { method: 'POST', body: JSON.stringify({ coverNote }) });
+    const panel = document.getElementById(`apply-panel-${jobId}`);
+    panel.innerHTML = '<p style="color:var(--brass); font-weight:600;">Application submitted — you can track its status from your dashboard.</p>';
+  } catch (err) {
+    errorBox.textContent = err.message;
+    errorBox.classList.add('show');
+  }
+}
+
+document.getElementById('filter-apply').addEventListener('click', loadJobs);
+document.getElementById('filter-q').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadJobs(); });
+loadJobs();
+</script>
+</body>
+</html>

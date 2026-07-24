@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Applications — Mishah Employment Agency</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="jobs.html">Jobs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="dash-header">
+  <div class="wrap">
+    <div class="eyebrow on-dark">Domestic Helper Dashboard</div>
+    <h1 id="dash-title">Welcome back</h1>
+    <p>Track the status of every role you've applied to.</p>
+  </div>
+</div>
+
+<div class="dash-body">
+  <div class="wrap">
+    <div class="dash-stats" id="dash-stats"></div>
+
+    <div class="dash-section">
+      <div class="dash-section-head">
+        <h2>Your applications</h2>
+        <a href="jobs.html" class="btn btn-outline">Browse more roles</a>
+      </div>
+      <div id="apps-error" class="auth-error"></div>
+      <div id="apps-list" class="card-list"></div>
+    </div>
+  </div>
+</div>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+<script>
+const user = requireRole('seeker');
+
+async function loadDashboard() {
+  if (!user) return;
+  document.getElementById('dash-title').textContent = `Welcome back, ${user.name.split(' ')[0]}`;
+
+  const list = document.getElementById('apps-list');
+  const errorBox = document.getElementById('apps-error');
+  errorBox.classList.remove('show');
+  list.innerHTML = '<p style="color:var(--ink-soft)">Loading your applications...</p>';
+
+  try {
+    const data = await apiFetch('/applications/mine');
+    renderStats(data.applications);
+    renderApps(data.applications);
+  } catch (err) {
+    list.innerHTML = '';
+    errorBox.textContent = err.message;
+    errorBox.classList.add('show');
+  }
+}
+
+function renderStats(apps) {
+  const shortlisted = apps.filter(a => a.status === 'shortlisted').length;
+  const hired = apps.filter(a => a.status === 'hired').length;
+  const pending = apps.filter(a => ['submitted', 'reviewing'].includes(a.status)).length;
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card"><div class="n">${apps.length}</div><div class="l">Total applications</div></div>
+    <div class="stat-card"><div class="n">${pending}</div><div class="l">Awaiting review</div></div>
+    <div class="stat-card"><div class="n">${shortlisted}</div><div class="l">Shortlisted</div></div>
+    <div class="stat-card"><div class="n">${hired}</div><div class="l">Hired</div></div>
+  `;
+}
+
+function renderApps(apps) {
+  const list = document.getElementById('apps-list');
+  if (!apps.length) {
+    list.innerHTML = '<div class="empty-state">You haven\'t applied to any roles yet — <a href="jobs.html">browse open roles</a> to get started.</div>';
+    return;
+  }
+  list.innerHTML = apps.map(a => `
+    <div class="list-card">
+      <div class="list-card-top">
+        <div>
+          <h4>${escapeHtml(a.job ? a.job.title : 'Listing no longer available')}</h4>
+          <div class="meta">${a.job ? escapeHtml(a.job.location) : ''} · Applied ${formatDate(a.createdAt)}</div>
+        </div>
+        <span class="badge badge-${a.status}">${a.status}</span>
+      </div>
+      ${a.coverNote ? `<p class="desc">Your note: "${escapeHtml(a.coverNote)}"</p>` : ''}
+    </div>
+  `).join('');
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

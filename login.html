@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Mishah Employment Agency</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="jobs.html">Jobs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="eyebrow">Welcome back</div>
+    <h1>Log in</h1>
+    <p class="sub">Access your employer or domestic helper dashboard.</p>
+
+    <div class="auth-error" id="login-error"></div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit" class="btn btn-navy full-btn" id="login-submit">Log in</button>
+    </form>
+
+    <p class="auth-foot">Don't have an account? <a href="register.html">Create one</a></p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© <span id="year"></span> Mishah Employment Agency. All rights reserved.</span>
+      <a href="privacy.html" style="color:inherit; text-decoration:underline;">Privacy Policy</a>
+      <span class="license">Licence No. PJB/LAP/2011/006</span>
+    </div>
+  </div>
+</footer>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+<script>
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('login-error');
+    const submitBtn = document.getElementById('login-submit');
+    errorBox.classList.remove('show');
+
+    const payload = {
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Logging in...';
+    try {
+      const data = await apiFetch('/auth/login', { method: 'POST', body: JSON.stringify(payload) });
+      saveSession(data.token, data.user);
+      const params = new URLSearchParams(window.location.search);
+      window.location.href = dashboardUrlForRole(data.user.role);
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Log in';
+    }
+  });
+</script>
+</body>
+</html>

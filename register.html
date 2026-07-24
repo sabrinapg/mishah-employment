@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create an account — Mishah Employment Agency</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/logo_tight.png" alt="Mishah Employment Agency logo">
+      <span class="brand-text">Mishah<span>Employment Agency</span></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="services.html">Services</a></li>
+      <li><a href="jobs.html">Jobs</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li class="nav-account" id="nav-account-slot"></li>
+    </ul>
+  </nav>
+</header>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="eyebrow">Create an account</div>
+    <h1>Join Mishah</h1>
+    <p class="sub">Register as a family/employer to post placements, or as a domestic helper to apply.</p>
+
+    <div class="role-toggle" role="tablist">
+      <button type="button" class="tab-btn active" data-role="employer">I'm hiring a helper</button>
+      <button type="button" class="tab-btn" data-role="seeker">I'm a domestic helper</button>
+    </div>
+
+    <div class="auth-error" id="register-error"></div>
+
+    <form id="register-form">
+      <input type="hidden" id="role" value="employer">
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="field">
+        <label for="email">Email address</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone">
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" minlength="8" required>
+      </div>
+      <button type="submit" class="btn btn-navy full-btn" id="register-submit">Create account</button>
+    </form>
+
+    <p class="auth-foot">Already have an account? <a href="login.html">Log in</a></p>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none; padding-top:0;">
+      <span>© <span id="year"></span> Mishah Employment Agency. All rights reserved.</span>
+      <a href="privacy.html" style="color:inherit; text-decoration:underline;">Privacy Policy</a>
+      <span class="license">Licence No. PJB/LAP/2011/006</span>
+    </div>
+  </div>
+</footer>
+
+<script src="auth-client.js"></script>
+<script src="script.js"></script>
+<script>
+  const roleButtons = document.querySelectorAll('.role-toggle .tab-btn');
+  const roleInput = document.getElementById('role');
+  roleButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      roleButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      roleInput.value = btn.dataset.role;
+    });
+  });
+
+  document.getElementById('register-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorBox = document.getElementById('register-error');
+    const submitBtn = document.getElementById('register-submit');
+    errorBox.classList.remove('show');
+
+    const payload = {
+      name: document.getElementById('name').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
+      password: document.getElementById('password').value,
+      role: roleInput.value
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating account...';
+    try {
+      const data = await apiFetch('/auth/register', { method: 'POST', body: JSON.stringify(payload) });
+      saveSession(data.token, data.user);
+      window.location.href = dashboardUrlForRole(data.user.role);
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Create account';
+    }
+  });
+</script>
+</body>
+</html>
